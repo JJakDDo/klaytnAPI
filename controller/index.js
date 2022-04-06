@@ -47,4 +47,76 @@ module.exports = {
       }
     },
   },
+  accounts: {
+    get: async function (req, res) {
+      const accountAddress = req.params.accountAddress;
+      let response;
+      try {
+        response = await caver.rpc.klay.getAccount(accountAddress);
+      } catch (err) {
+        res.status(400);
+        res.send({ message: "The account does not exist" });
+        return;
+      }
+      switch (response.accType) {
+        // Account가 EOA 계정일 때
+        case 1: {
+          res.status(200);
+          res.send({ type: "EOA", data: response });
+          return;
+        }
+        // Acount가 SCA 계정일 때
+        case 2: {
+          try {
+            // KIP7 Interface가 구현되었는지 확인
+            const isKIP7 = await caver.kct.kip7.detectInterface(accountAddress);
+            if (isKIP7.IKIP7) {
+              const kip7 = await new caver.kct.kip7(accountAddress);
+              const name = await kip7.name();
+              const symbol = await kip7.symbol();
+              const decimals = await kip7.decimals();
+              const totalSupply = await kip7.totalSupply();
+              res.status(200);
+              res.send({
+                type: "KIP7 Token",
+                name,
+                symbol,
+                decimals,
+                totalSupply,
+                data: response,
+              });
+              return;
+            }
+
+            // KIP17 Interface가 구현되었는지 확인
+            const isKIP17 = await caver.kct.kip17.detectInterface(
+              accountAddress
+            );
+            if (isKIP17.IKIP17) {
+              const kip17 = await new caver.kct.kip17(accountAddress);
+              const name = await kip17.name();
+              const symbol = await kip17.symbol();
+              const totalSupply = await kip17.totalSupply();
+              res.status(200);
+              res.send({
+                type: "KIP17 Token",
+                name,
+                symbol,
+                totalSupply,
+                data: response,
+              });
+              return;
+            }
+          } catch (err) {
+            res.status(200);
+            res.send({
+              type: "SCA",
+              data: response,
+            });
+            return;
+          }
+        }
+      }
+    },
+  },
 };
