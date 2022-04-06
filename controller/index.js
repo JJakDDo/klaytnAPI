@@ -1,5 +1,17 @@
-const Caver = require("caver-js");
-const caver = new Caver("https://api.baobab.klaytn.net:8651/");
+const dotenv = require("dotenv");
+dotenv.config();
+// caver-js 모듈
+// const Caver = require("caver-js");
+// const caver = new Caver("https://api.baobab.klaytn.net:8651/");
+
+// caver-js-ext-kas 모듈
+const chainId = 1001; //baobab network
+const CaverExtKAS = require("caver-js-ext-kas");
+const caver = new CaverExtKAS(
+  chainId,
+  process.env.ACCESSKEYID,
+  process.env.SECRETACCESSKEY
+);
 
 module.exports = {
   blocks: {
