@@ -34,8 +34,17 @@ module.exports = {
     },
   },
   txs: {
-    get: function (req, res) {
-      res.send("hello txs");
+    //Get transaction by Hash
+    get: async function (req, res) {
+      const txHash = req.params.txHash;
+      try {
+        const response = await caver.rpc.klay.getTransactionByHash(txHash);
+        res.status(200);
+        res.send(response);
+      } catch (err) {
+        res.status(400);
+        res.send({ message: "The transaction does not exist" });
+      }
     },
   },
 };
