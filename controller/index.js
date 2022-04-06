@@ -6,8 +6,14 @@ module.exports = {
     //Get Block By Number or Hash
     getByNumberOrHash: async function (req, res) {
       const blockNumberOrHash = req.params.blockNumberOrHash;
-      const response = await caver.rpc.klay.getBlock(blockNumberOrHash, true);
-      res.send(response);
+      try {
+        const response = await caver.rpc.klay.getBlock(blockNumberOrHash, true);
+        res.status(200);
+        res.send(response);
+      } catch (err) {
+        res.status(400);
+        res.send({ message: "The block does not exist" });
+      }
     },
     //Get latest N Blocks
     getLatestBlocks: async function (req, res) {
@@ -21,6 +27,7 @@ module.exports = {
         i--
       ) {
         const response = await caver.rpc.klay.getBlock(i);
+        res.status(200);
         result.push(response);
       }
       res.send(result);
